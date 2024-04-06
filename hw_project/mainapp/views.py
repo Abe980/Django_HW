@@ -1,6 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 import logging
+from .models import Client, Product, Order
+from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -26,3 +28,17 @@ def about(request):
                 После этого мы сможем обратиться за помощью в поиске работы в центр карьеры и продолжить работать с карьерным консультантом. На последнем уроке курса будет ссылка на форму, которую необходимо заполнить для обращения в центр карьеры. </p>    
             ''')
 
+
+def products(request, client_id, count_days):
+    start_date = datetime.today() - timedelta(days=count_days)
+    client = get_object_or_404(Client, pk=client_id)
+    orders = Order.objects.filter(customer_id=client, date_ordered__gt=start_date)
+    ords = set()
+    for ord in orders:
+        prods = ord.products.all()
+        print(type(prods))
+        for prod in prods:
+            ords.add(prod)
+    ords = list(ords)
+    ords.sort(key=lambda d: d.date_add, reverse=False)
+    return render(request, 'mainapp/client_orders.html', {'client': client, 'orders': ords})
