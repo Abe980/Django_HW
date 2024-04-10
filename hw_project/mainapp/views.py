@@ -3,6 +3,8 @@ from django.http import HttpResponse
 import logging
 from .models import Client, Product, Order
 from datetime import datetime, timedelta
+from .forms import AddProductForm
+from django.core.files.storage import FileSystemStorage
 
 logger = logging.getLogger(__name__)
 
@@ -42,3 +44,19 @@ def products(request, client_id, count_days):
     ords = list(ords)
     ords.sort(key=lambda d: d.date_add, reverse=False)
     return render(request, 'mainapp/client_orders.html', {'client': client, 'orders': ords})
+
+
+def add_product(request):
+    if request.method == 'POST':
+        form = AddProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            description = form.cleaned_data['description']
+            price = form.cleaned_data['price']
+            count = form.cleaned_data['count']
+            image = form.cleaned_data['image']
+            product = Product(name=name, description=description, price=price, count=count, image=image)
+            product.save()
+    else:
+        form = AddProductForm()
+    return render(request, 'mainapp/add_product.html', {'form': form})
