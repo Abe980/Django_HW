@@ -10,6 +10,9 @@ class Client(models.Model):
     adress = models.CharField(max_length=50)
     date_reg = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self) -> str:
+        return f'{self.name}'
+
 
 class Product(models.Model):
     name = models.CharField(max_length=50)
